@@ -95,9 +95,9 @@ result=result.drop(["Item Category"], axis = 1)
 
 df = pd.read_excel('result.xlsx')
 
-#df1 = df1.rename(columns={'Unnamed: 0':'Item_Category'})
+df = df.rename(columns={'Unnamed: 0':'Item_Category'})
 
-#df1['Aggrigate_Values_SubCat'] = df1['Aggrigate_Values_SubCat'].abs()
+df['Aggrigate_Values'] = df['Aggrigate_Values'].abs()
 
 
 df1= pd.read_excel('result_1.xlsx')
@@ -105,21 +105,30 @@ df1= pd.read_excel('result_1.xlsx')
 
 df1['Aggrigate_Values_SubCat'] = df1['Aggrigate_Values_SubCat'].abs()
 
+df2 = pd.read_excel('result2.xlsx')
+
 #df = pd.read_excel("Aster Pre Final DB.xlsx",encoding="latin1")
 
  # Create bar chart with drop down list
 
-app = dash.Dash(__name__,)
+app = dash.Dash(__name__)
 app.layout = html.Div([
 
 
     html.Div([
-    html.H1('Aster Statistics Report')],
-    style={'text-align': 'center',
-            
+        html.H2("ASTER DM HEAlTHCARE STATISTICS REPORT"),
+        html.Img(src="/assets/images.png")
+    ],style={'text-align': 'center',
+        
             "color" : "#FF0000"
 
-    }),
+    }, className="banner"),
+    
+    html.Br(),
+    html.Br(),
+
+
+
 
     html.Div([
         dcc.Dropdown(id='Aster_report',
@@ -138,10 +147,70 @@ app.layout = html.Div([
     dcc.Graph(id='Product_stats',
               config={'displayModeBar': True})
 
-        ],style={'margin-left':'10%','margin-top':'1%'})
+        ],className="six columns",
+        style={'margin-left':'10%','margin-top':'1%'}),
 
+
+    ##########################################
+
+    
+
+
+    html.Br(),
+    html.Br(),
+    html.Div([
+        dcc.Dropdown(id='Aster_report1',
+                     multi=True,
+                     clearable=True,
+                     value=['Item Sub Category','Total Qty'],
+                     placeholder='Select columns',
+                     options=[{'label': j, 'value': j}
+                              for j in (df['Stock_Status'].unique())])
+            ], style={'width': '40%',
+              'margin-left': '30%',
+              'background-color': '#2EBECD'
+    }),
+    html.Div([
+    dcc.Graph(id='Product_stats1',
+              config={'displayModeBar': True})
+
+        ],className="six columns",
+        style={'margin-left':'10%','margin-top':'1%'}),
+
+
+    ##########################################
+
+
+    html.Br(),
+    html.Br(),
+    html.Div([
+        dcc.Dropdown(id='Aster_report2',
+                     multi=True,
+                     clearable=True,
+                     value=['Item Sub Category','Total Qty'],
+                     placeholder='Select columns',
+                     options=[{'label': k, 'value': k}
+                              for k in (df2['Category'].unique())])
+            ], style={'width': '40%',
+              'margin-left': '30%',
+              'background-color': '#2EBECD'
+    }),
+    html.Div([
+    dcc.Graph(id='Product_stats2',
+              config={'displayModeBar': True})
+
+        ],className="six columns",
+        style={'margin-left':'10%','margin-top':'1%'})
+
+
+
+##########*********************************
 
     ])
+
+#app.css.append_css({
+#    "external_url" : "https://codepen.io/chriddyp/pen/bWLwgP.css"
+#    })
 @app.callback(Output('Product_stats', 'figure'),
     [Input('Aster_report', 'value')])
 
@@ -160,8 +229,8 @@ def annual_by_country_barchart(Aster_report):
             'layout': go.Layout(
              title='List of Products: ' + ', '.join(Aster_report),
 
-            plot_bgcolor='#FF0000',
-            paper_bgcolor='#C0C0C0',
+            plot_bgcolor='#EFEFEF',
+            paper_bgcolor='#ffffff ',
 
             font={'family': 'Palatino'},
             width=1050,
@@ -184,9 +253,95 @@ def annual_by_country_barchart(Aster_report):
 
     }
 
+##########################################################
+
+@app.callback(Output('Product_stats1', 'figure'),
+    [Input('Aster_report1', 'value')])
+
+def annual_by_country_barchart(Aster_report1):
 
 
-        
+
+    
+    
+    return {'data': [go.Bar(x=df[df['Stock_Status'] == j]['Item_Category'],
+                        y=df[df['Stock_Status'] == j]['Aggrigate_Values'],
+                        textposition='auto',
+                        name=j)
+                        for j in Aster_report1],
+
+            'layout': go.Layout(
+             title='Stock consumed and available: ' + ', '.join(Aster_report1),
+
+            plot_bgcolor='#EFEFEF',
+            paper_bgcolor='#ffffff ',
+
+            font={'family': 'Palatino'},
+            width=1050,
+            height = 520,
+             barmode='group',
+             template='seaborn',
+             yaxis=dict(
+                 title='Inventory Statistics',
+                 titlefont_size=18,
+                 tickfont_size=14,
+             ),
+             xaxis=dict(
+                 title='Category',
+                 titlefont_size=18,
+                 tickfont_size=14,
+
+             ),
+
+         )
+
+    }
+
+####################################################################3
+
+
+@app.callback(Output('Product_stats2', 'figure'),
+    [Input('Aster_report2', 'value')])
+
+def annual_by_country_barchart(Aster_report2):
+
+
+
+    
+    
+    return {'data': [go.Bar(x=df2[df2['Category'] == k]['Doctor Name'],
+                        y=df2[df2['Category'] == k]['Total'],
+                        textposition='auto',
+                        name=k)
+                        for k in Aster_report2],
+
+            'layout': go.Layout(
+             title='Items consumed by Doctor: ' + ', '.join(Aster_report2),
+
+            plot_bgcolor='#EFEFEF',
+            paper_bgcolor='#ffffff ',
+
+            font={'family': 'Palatino'},
+            width=1050,
+            height = 520,
+             barmode='group',
+             template='seaborn',
+             yaxis=dict(
+                 title='Inventory Statistics',
+                 titlefont_size=18,
+                 tickfont_size=14,
+             ),
+             xaxis=dict(
+                 title='Category',
+                 titlefont_size=18,
+                 tickfont_size=14,
+
+             ),
+
+         )
+
+    }
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
